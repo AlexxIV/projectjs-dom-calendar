@@ -1,3 +1,7 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed');
+body {
+    font-family: 'Roboto Condensed', sans-serif;
+}
 .calendar-main{
     width: 330px;
     padding: 10px;
@@ -21,6 +25,14 @@
     width: calc(100% - 40px);
     margin: auto;
     text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.calendar-datetime .today .today-month,
+.calendar-datetime .today .today-year {
+    padding: 5px;
+    cursor: pointer;
 }
 .calendar-navigation {
     position: relative;
@@ -48,6 +60,14 @@
     width: 14.28%;
     text-align: center;
 }
+.calendar-day.current-month .calendar-digit {
+    cursor: pointer;
+}
+.calendar-day.current-month .calendar-digit:hover {
+    background: #ccc;
+    border-radius: 50px;
+    height: 20px;
+}
 .calendar-day.today .calendar-digit{
     display: inline-block;
     height: 20px;
@@ -55,12 +75,22 @@
     border-radius: 50px;
     background: #666;
     color: #fff;
+    line-height: 1.2;
 }
 .calendar-day.disable-day{
     opacity: 0.5;
 }
 .calendar-day.next-month, .calendar-day.previous-month{
     opacity: 0.33;
+}
+.calendar-day .calendar-digit {
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    border-radius: 50px;
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #fff;
 }
 .calendar-digit{
     position: relative;
@@ -101,10 +131,22 @@
     border-radius: 50px;
     border: 1px solid #999;
 }
+.today .calendar-digit.event-day:hover{
+    background: #888;
+}
+
 .calendar-digit.event-day:hover{
     cursor: pointer;
     background: #eee;
 }
-.today .calendar-digit.event-day:hover{
-    background: #888;
+.hidden {
+    display: none;
+}
+h2 {
+    margin: 1% 0 0 1%;
+    font-size: 30px;
+}
+#datepicker {
+    padding: 2px;
+    margin: 1% 0 0 1%;
 }

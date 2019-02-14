@@ -38,8 +38,6 @@ var $ = (function () {
         return this.each((el) => {
             el.appendChild(newNode);
         });
-
-        return this;
     };
 
     /**
@@ -59,6 +57,24 @@ var $ = (function () {
         var temp = [];
         this.each((el) => {
             temp.push(el.parentNode);
+        });
+        this.elems = temp;
+        return this;
+    };
+
+    Constructor.prototype.next = function () {
+        var temp = [];
+        this.each((el) => {
+           temp.push(el.nextSibling);
+        });
+        this.elems = temp;
+        return this;
+    };
+
+    Constructor.prototype.prev = function () {
+        var temp = [];
+        this.each((el) => {
+            temp.push(el.previousSibling);
         });
         this.elems = temp;
         return this;
@@ -86,8 +102,11 @@ var $ = (function () {
     };
 
     Constructor.prototype.attr = function(attrName, attrValue) {
-
-    }
+        this.each((el) => {
+            el.setAttribute(attrName, attrValue);
+        });
+        return this;
+    };
 
     /**
      * Add a class to elements
@@ -109,6 +128,12 @@ var $ = (function () {
             item.classList.remove(className);
         });
         return this;
+    };
+
+    Constructor.prototype.html = function (html) {
+        this.each(function (item) {
+            item.innerHTML = html;
+        })
     };
 
     /**

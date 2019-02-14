@@ -5,9 +5,11 @@ let Calendar = (model, options, date) => {
         DatetimePicker: false,
     };
 
-    Object.keys(options).forEach((key) => {
-        this.Options[key] = typeof options[key] === 'string' ? options[key].toLowerCase() : options[key];
-    });
+    if (options) {
+        Object.keys(options).forEach((key) => {
+            this.Options[key] = typeof options[key] === 'string' ? options[key].toLowerCase() : options[key];
+        });
+    }
 
     this.Model = JSON.parse(localStorage.getItem('Events')) || [];
 
@@ -50,10 +52,11 @@ let Calendar = (model, options, date) => {
 };
 
 let CreateCalendar = (calendar, element, adjuster) => {
+
     if (typeof adjuster !== 'undefined') {
         let newDate = new Date(calendar.Selected.Year, calendar.Selected.Month + adjuster, 1);
         calendar = Calendar(calendar.Model, calendar.Options, newDate);
-        element.innerHTML = '';
+        element.html('');
     } else {
         Object.keys(calendar.Options).forEach((key) => {
             typeof calendar.Options[key] !== 'function' &&
@@ -64,150 +67,177 @@ let CreateCalendar = (calendar, element, adjuster) => {
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    let mainSection = document.createElement('div');
-    mainSection.className += 'calendar-main';
+
+    if (calendar.Options.DatetimePicker) {
+        let mainSection = '<div id="d-picker" class="calendar-main hidden datepicker"></div>';
+        element.appendAfter(mainSection);
+    } else {
+        let mainSection = '<div class="calendar-main"></div>';
+        element.append(mainSection);
+    }
 
     let AddDateTime = () => {
-        let datetime = document.createElement('div');
-        datetime.className += 'calendar-datetime';
+        let datetime = '<div class="calendar-datetime"></div>';
+        $('.calendar-main').append(datetime);
+
 
         if (calendar.Options.NavShow) {
-            let calendarBack = document.createElement('div');
-            calendarBack.className += ' calendar-back calendar-navigation';
-            calendarBack.addEventListener('click', () => {
-                CreateCalendar(calendar, element, -1)
+            let calendarBack = '<div class="calendar-back calendar-navigation"><svg height="15" width="15" viewBox="0 0 75 100" fill="rgba(0, 0, 0, 0.5)"><polyline points="0, 50 75, 0 75, 100"></polyline></svg></div>'
+            $('.calendar-datetime').append(calendarBack);
+            $('.calendar-back').each((el) => {
+                el.addEventListener('click', () => {
+                    if (calendar.Options.DatetimePicker) {
+                        $('#datepicker').next().remove();
+                        CreateCalendar(calendar, element, -1);
+                        $('#datepicker').next().removeClass('hidden');
+                    } else {
+                        CreateCalendar(calendar, element, -1)
+                    }
+                });
             });
-
-            calendarBack.innerHTML = '<svg height="15" width="15" viewBox="0 0 75 100" fill="rgba(0, 0, 0, 0.5)"><polyline points="0, 50 75, 0 75, 100"></polyline></svg>';
-            datetime.appendChild(calendarBack);
         }
 
-        let today = document.createElement('div');
-        today.className += ' today';
-        today.innerHTML = months[calendar.Selected.Month] + ', ' + calendar.Selected.Year;
-        datetime.appendChild(today);
+        // let today = document.createElement('div');
+        // today.className += ' today';
+        let today = '<div class="today"></div>';
+        let month = '<div class="today-month" data-month="' + calendar.Selected.Month + '">' + calendar.Selected.Year + '</div>';
+        let year = '<div class="today-year" data-year="' + calendar.Selected.Year + '">' + months[calendar.Selected.Month] + '</div>';
+        $('.calendar-datetime').append(today);
+        $('.today').append(month);
+        $('.today').append(year);
 
-        if (calendar.Options.NavShow && !calendar.Options.NavVerttical) {
-            let calendarForward = document.createElement('div');
-            calendarForward.className += 'calendar-forward calendar-navigation';
-            calendarForward.addEventListener('click', () => {
-                CreateCalendar(calendar, element, 1)
+        if (calendar.Options.NavShow) {
+            let calendarForward = '<div class="calendar-forward calendar-navigation"><svg height="15" width="15" viewBox="0 0 75 100" fill="rgba(0, 0, 0, 0.5)"><polyline points="0, 0 75, 50 0, 100"></polyline></svg></div>';
+
+            $('.calendar-datetime').append(calendarForward);
+            $('.calendar-forward').each((el) => {
+                el.addEventListener('click', () => {
+                    if (calendar.Options.DatetimePicker) {
+                        $('#datepicker').next().remove();
+                        CreateCalendar(calendar, element, 1)
+                        $('#datepicker').next().removeClass('hidden');
+                    } else {
+                        CreateCalendar(calendar, element, 1)
+                    }
+                });
             });
-
-            calendarForward.innerHTML = '<svg height="15" width="15" viewBox="0 0 75 100" fill="rgba(0, 0, 0, 0.5)"><polyline points="0, 0 75, 50 0, 100"></polyline></svg>'
-            datetime.appendChild(calendarForward);
-        }
-
-        if (calendar.Options.DatetimeLocation) {
-            document.getElementById(calendar.Options.DatetimeLocation).innerHTML = '';
-            document.getElementById(calendar.Options.DatetimeLocation).appendChild(datetime);
-        } else {
-            mainSection.appendChild(datetime);
         }
     };
 
     let AddLabels = () => {
-        let labels = document.createElement('ul');
-        labels.className = 'calendar-labels';
+        let labels = '<ul class="calendar-labels"></ul>';
+        $('.calendar-main').append(labels);
         const labelsList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         labelsList.forEach((label) => {
-            let labelWrap = document.createElement('li');
-            labelWrap.className += 'calendar-label';
-            labelWrap.innerHTML = label;
-            labels.appendChild(labelWrap);
+            let labelWrap = '<li class="calendar-label">' + label + '</li>';
+            $('.calendar-labels').append(labelWrap);
         });
-
-        mainSection.appendChild(labels);
     };
 
     let AddDays = () => {
-        let DayDigit = (digit) => {
-            let digitWrap = document.createElement('p');
-            digitWrap.className += 'calendar-digit';
-            digitWrap.innerHTML += digit;
-            return digitWrap;
+        let DayDigit = (digit, month, year, event = null, eventTitle = null) => {
+            if (event !== null && eventTitle !== null) {
+                return '<p class="calendar-digit event-day" id="' + digit + month + year + '" data-date="' + digit + '" data-month="' + month + '" data-year="' + year + '">' + digit + '<span class="calendar-event-title">' + eventTitle + '</span></p>';
+            }
+
+            return '<p class="calendar-digit" id="' + digit + month + year + '" data-date="' + digit + '" data-month="' + month + '" data-year="' + year + '">' + digit + '</p>';
         };
 
-        let DayEvent = (day) => {
-            return day.addEventListener('click', () => {
-                let event = prompt('Enter event: ');
+        let AttachDayEvent = (days) => {
+            return days.each((day) => {
+                day.addEventListener('click', () => {
+                    let eventData = prompt('Enter event: ');
+                    if (eventData) {
+                        let year = day.getAttribute('data-year');
+                        let month = day.getAttribute('data-month');
+                        let date = day.getAttribute('data-date');
 
-                if (event) {
-                    day.className += ' event-day';
-                    let eventTitle = document.createElement('span');
-                    eventTitle.className += 'calendar-event-title';
-                    eventTitle.innerHTML = event;
-                    day.appendChild(eventTitle);
-                }
+                        let eventDate = new Date(Date.UTC(year, month, date));
+
+                        let event = {
+                            Date: eventDate,
+                            Title: eventData
+                        };
+
+                        if (event) {
+                            day.className += ' event-day';
+                            let eventTitle = document.createElement('span');
+                            eventTitle.className += 'calendar-event-title';
+                            eventTitle.innerHTML = event.Title;
+                            day.appendChild(eventTitle);
+                            this.Model.push(event);
+                            localStorage.setItem('Events', JSON.stringify(this.Model));
+                        }
+                    }
+                })
             })
         };
 
-        let days = document.createElement('ul');
-        days.className += 'calendar-days';
+        let days = '<ul class="calendar-days"></ul>';
+        $('.calendar-main').append(days);
 
         for (let i = 0; i < (calendar.Selected.FirstDay); i++) {
-            let day = document.createElement('li');
-            day.className += 'calendar-day previous-month';
-
-            let digit = DayDigit((calendar.Prev.Days - calendar.Selected.FirstDay) + (i + 1));
-            DayEvent(digit);
-            day.appendChild(digit);
-            days.appendChild(day);
+            let digit = DayDigit((calendar.Prev.Days - calendar.Selected.FirstDay) + (i + 1), calendar.Selected.Month - 1, calendar.Selected.Year);
+            let day = '<li class="calendar-day previous-month">' + digit + '</li>';
+            $('.calendar-days').append(day);
         }
 
         for (let i = 0; i < calendar.Selected.Days; i++) {
-            let day = document.createElement('li');
-            day.className += 'calendar-day current-month';
-
-            let digit = DayDigit(i + 1);
-
+            let event = null;
+            let eventTitle = null;
             for (let z = 0; z < calendar.Model.length; z++) {
                 let eventDate = calendar.Model[z].Date;
-                let toDate = new Date(calendar.Selected.Year, calendar.Selected.Month, (i + 1));
+                let toDate = new Date(Date.UTC(calendar.Selected.Year, calendar.Selected.Month, (i + 1)));
 
                 if (eventDate.getTime() === toDate.getTime()) {
-                    digit.className += ' event-day';
-
-                    let eventTitle = document.createElement('span');
-                    eventTitle.className += 'calendar-event-title';
-                    eventTitle.innerHTML = calendar.Model[z].Title;
-                    digit.appendChild(eventTitle);
+                    event = true;
+                    eventTitle = calendar.Model[z].Title;
                 }
 
             }
-
-            day.appendChild(digit);
-
+            let digit = DayDigit(i + 1, calendar.Selected.Month, calendar.Selected.Year, event, eventTitle);
+            let day = '';
             if ((i + 1) === calendar.Today.getDate() &&
                 calendar.Selected.Month === calendar.Today.Month &&
                 calendar.Selected.Year === calendar.Today.Year) {
-                day.className += ' today';
+                day = '<li class="calendar-day current-month today">' + digit + '</li>';
+            } else {
+                day = '<li class="calendar-day current-month">' + digit + '</li>';
             }
+            $('.calendar-days').append(day);
+        }
 
-            days.appendChild(day);
+        if (!calendar.Options.DatetimePicker) {
+            AttachDayEvent($('.calendar-days .calendar-day.current-month p'));
         }
 
         let extraDaysInCalendar = 13;
 
-        if (days.children.length > 35) {
+        if ($('.calendar-days').length > 35) {
             extraDaysInCalendar = 6;
-        } else if (days.children.length < 29) {
+        } else if ($('.calendar-days').length < 29) {
             extraDaysInCalendar = 20;
         }
 
         for (let i = 0; i < (extraDaysInCalendar - calendar.Selected.LastDay); i++) {
-            let day = document.createElement('li');
-            day.className += 'calendar-day next-month';
-
-            let digit = DayDigit(i + 1);
-            day.appendChild(digit);
-
-            days.appendChild(day);
+            let digit = DayDigit(i + 1, calendar.Selected.Month + 1, calendar.Selected.Year);
+            let day = '<li class="calendar-day next-month">' + digit + '</li>';
+            $('.calendar-days').append(day);
         }
-
-        mainSection.appendChild(days);
     };
-    element.appendChild(mainSection);
+    // let AddMonths = () => {
+    //     let monthsWrap = document.createElement('ul');
+    //     monthsWrap.className += 'months-list';
+    //     months.forEach((month, index) => {
+    //         let singleMonth = document.createElement('li');
+    //         singleMonth.className += 'single-month';
+    //         singleMonth.innerHTML = month;
+    //         singleMonth.setAttribute('data-month', index);
+    //         monthsWrap.appendChild(singleMonth);
+    //     });
+    //
+    //     mainSection.appendChild(monthsWrap);
+    // };
 
     if (calendar.Options.DateTimeShow) {
         AddDateTime();
@@ -222,3 +252,51 @@ let Initialize = (element, data, options) => {
     CreateCalendar(calendarObject, element);
 };
 
+
+// document.addEventListener("DOMContentLoaded", function() {
+//     $('#datepicker').each((inputField) => {
+//         inputField.addEventListener('click', () => {
+//             $('#datepicker').next().removeClass('hidden');
+//         })
+//     });
+//
+//     // $('#datepicker').each((inputField) => {
+//     //     inputField.addEventListener('blur', () => {
+//     //         $('#datepicker').next().addClass('hidden');
+//     //     });
+//     // });
+//
+// });
+
+// $('.datepicker').each((picker) => {
+//     picker.addEventListener('change', (element) => {
+//         $('.datepicker .calendar-day.current-month').each((picker) => {
+//             console.log(picker);
+//         })
+//     })
+// });
+
+document.addEventListener('click', function (e) {
+        if (e.target && e.target.id === 'datepicker') {
+            $(`#${e.target.id}`).next().removeClass('hidden');
+        }
+        if (e.target && e.target.className === 'calendar-digit' && e.target.parentNode.className === 'calendar-day current-month') {
+            console.log(e.target.className);
+            let date = e.target.getAttribute('data-date');
+            let month = (parseInt(e.target.getAttribute('data-month')) + 1);
+            let year = e.target.getAttribute('data-year');
+
+            if (date.length === 1) {
+                date = 0 + date;
+            }
+
+            month = month.toString();
+            if (month.length === 1) {
+                month = 0 + month;
+            }
+
+            $('#datepicker').elems[0].value = date + '-' + month + '-' + year;
+            $('.datepicker').addClass('hidden');
+        }
+    }
+);
