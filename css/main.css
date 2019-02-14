@@ -1,0 +1,110 @@
+.calendar-main{
+    width: 330px;
+    padding: 10px;
+}
+.calendar-main a {
+    color: #333;
+    font-weight: bold;
+}
+.calendar-datetime {
+    position: relative;
+    width: 66%;
+    min-width: 100px;
+    max-width: 300px;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px;
+}
+.calendar-datetime .today {
+    position: relative;
+    float: left;
+    width: calc(100% - 40px);
+    margin: auto;
+    text-align: center;
+}
+.calendar-navigation {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+}
+.calendar-navigation:hover {
+    cursor: pointer;
+}
+.calendar-navigation:hover svg{
+    fill: #666;
+}
+.calendar-back {
+    float: left;
+}
+.calendar-forward {
+    float: right;
+}
+.calendar-labels, .calendar-days{
+    padding-left: 0;
+}
+.calendar-label, .calendar-day{
+    display: inline-block;
+    width: 14.28%;
+    text-align: center;
+}
+.calendar-day.today .calendar-digit{
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    border-radius: 50px;
+    background: #666;
+    color: #fff;
+}
+.calendar-day.disable-day{
+    opacity: 0.5;
+}
+.calendar-day.next-month, .calendar-day.previous-month{
+    opacity: 0.33;
+}
+.calendar-digit{
+    position: relative;
+    margin: 5px;
+    padding: 5px;
+}
+.calendar-event-title{
+    position: absolute;
+    z-index: 5;
+    display: none;
+    top: 30px;
+    left: 0;
+    padding: 5px 10px;
+    background: #fff;
+    white-space: nowrap;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 12px;
+}
+.calendar-digit:hover .calendar-event-title{
+    display: block;
+}
+.calendar-event-title::before{
+    content: '';
+    position: absolute;
+    top: -7.5px; left: 7.5px;
+    width: 0;
+    height: 0;
+    border-left: 7.5px solid transparent;
+    border-right: 7.5px solid transparent;
+
+    border-bottom: 7.5px solid #ccc;
+}
+.calendar-digit.event-day{
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    border-radius: 50px;
+    border: 1px solid #999;
+}
+.calendar-digit.event-day:hover{
+    cursor: pointer;
+    background: #eee;
+}
+.today .calendar-digit.event-day:hover{
+    background: #888;
+}
